@@ -27,7 +27,7 @@ const metricsActivityConstant = {
 }
 
 const LIMIT_DEFAULT = 10
-const LIMIT_MAX = 25
+const LIMIT_MAX = 200
 const OFFSET_DEFAULT = 0
 
 class AnnouncementController {
@@ -73,16 +73,17 @@ class AnnouncementController {
         return async((requestObj) => {
             try {
                 let validation = this.announcementModel.validateApi(requestObj.body)
-                if (!validation.isValid) throw this.customError({
+                if (!validation.isValid) throw {
                     message: validation.error,
-                    status: HttpStatus.BAD_REQUEST
-                })
+                    status: HttpStatus.BAD_REQUEST,
+                    isCustom:true
+                }
                 let authUserToken = _.get(requestObj, 'kauth.grant.access_token.token') || _.get(requestObj, "headers['x-authenticated-user-token']")
                 let tokenDetails = await(this.__getTokenDetails(authUserToken))
                 if(tokenDetails){
                     requestObj.body.request.userId = tokenDetails.userId
                 }else{
-                    throw this.customError({message:'Unauthorized', status: HttpStatus.UNAUTHORIZED})
+                    throw this.customError({message:'Unauthorized', status: HttpStatus.UNAUTHORIZED, isCustom:true})
                 }
                 var newAnnouncementObj = await (this.__createAnnouncement(requestObj.body.request))
                 if (newAnnouncementObj.data.id) {
@@ -103,7 +104,7 @@ class AnnouncementController {
             try {
                 let tokenDetails = await(this.__getTokenDetails(authUserToken))
                 if (!tokenDetails) {
-                    throw {message: 'Unauthorized User!', status: HttpStatus.UNAUTHORIZED } 
+                    throw {message: 'Unauthorized User!', status: HttpStatus.UNAUTHORIZED,isCustom:true } 
                 }
                 let options = {
                     method: 'GET',
@@ -118,17 +119,20 @@ class AnnouncementController {
                         if (_.get(error, 'body.params.err') === 'USER_NOT_FOUND') {
                             reject(this.customError({
                                 message: 'User not found!',
-                                status: HttpStatus.NOT_FOUND
+                                status: HttpStatus.NOT_FOUND,
+                                isCustom:true
                             }))
                         } else if (_.get(error, 'body.params.err') === 'UNAUTHORIZE_USER') {
                             reject(this.customError({
                                 message: 'Unauthorized User!',
-                                status: HttpStatus.UNAUTHORIZED
+                                status: HttpStatus.UNAUTHORIZED,
+                                isCustom:true
                             }))
                         } else {
                             reject(this.customError({
                                 message: 'Unknown Error!',
-                                status: HttpStatus.BAD_GATEWAY
+                                status: HttpStatus.BAD_GATEWAY,
+                                isCustom:true
                             }))
                         }
                     })
@@ -143,8 +147,11 @@ class AnnouncementController {
             let announcementId = uuidv1()
             if (!data) reject(this.customError({
                 message: 'Invalid Request, Values are required.',
-                statusCode: HttpStatus.BAD_REQUEST
+                statusCode: HttpStatus.BAD_REQUEST,
+                isCustom:true
             }))
+
+            let attachments = data.attachments ? _.map(data.attachments, JSON.stringify) : []
             let query = {
                 values: {
                     'id': announcementId,
@@ -160,7 +167,7 @@ class AnnouncementController {
                     'target': data.target,
                     'links': data.links || [],
                     'status': statusConstant.ACTIVE,
-                    'attachments': data.attachments || []
+                    'attachments': attachments
                 }
             }
 
@@ -175,7 +182,8 @@ class AnnouncementController {
                     } else {
                         throw {
                             message: 'Unable to create!',
-                            status: HttpStatus.INTERNAL_SERVER_ERROR
+                            status: HttpStatus.INTERNAL_SERVER_ERROR,
+                            isCustom:true
                         }
                     }
                 })
@@ -183,8 +191,7 @@ class AnnouncementController {
                     reject(this.customError(error))
                 })
         })
-  }
-
+    }
     
     /**
      * Which is used to create a announcements notification
@@ -228,7 +235,7 @@ class AnnouncementController {
                 notifier.send(target, payload)
             })
         } catch (error) {
-            throw {message:'Internal Server Error', status: HttpStatus.INTERNAL_SERVER_ERROR}
+            throw this.customError(error)
         }
     }
 
@@ -254,14 +261,15 @@ class AnnouncementController {
                 .then((data) => {
                     if (data) {
                         _.forEach(data.data.content, (announcementObj) => {
-                            if (_.isString(announcementObj.target)) announcementObj.target = JSON.parse(announcementObj.target)
+                            this.__parseAttachments(announcementObj)
                         })
                         resolve(_.get(data.data, 'content[0]'))
                     } else {
-                        throw {
+                        throw this.customError({
                             message: 'Unable to find!',
-                            status: HttpStatus.NOT_FOUND
-                        }
+                            status: HttpStatus.NOT_FOUND,
+                            isCustom:true
+                        })
                     }
                 })
                 .catch((error) => {
@@ -269,6 +277,8 @@ class AnnouncementController {
                 })
         })
     }
+
+
 
     getDefinitions(requestObj) {
         return this.__getDefinitions()(requestObj)
@@ -290,7 +300,8 @@ class AnnouncementController {
                 } else {
                     throw {
                         message: 'Invalid request!',
-                        status: HttpStatus.BAD_REQUEST
+                        status: HttpStatus.BAD_REQUEST,
+                        isCustom:true
                     }
                 }
             } catch (error) {
@@ -308,7 +319,8 @@ class AnnouncementController {
         return new Promise((resolve, reject) => {
             let query = {
                 query: {
-                    'rootorgid': _.get(requestObj, 'body.request.rootOrgId')
+                    'rootorgid': _.get(requestObj, 'body.request.rootOrgId'),
+                    'status': statusConstant.ACTIVE
                 }
             }
             this.announcementTypeStore.findObject(query)
@@ -352,7 +364,8 @@ class AnnouncementController {
             } else {
                 throw this.customError({
                     message: 'Unauthorized User!',
-                    status: HttpStatus.UNAUTHORIZED
+                    status: HttpStatus.UNAUTHORIZED,
+                    isCustom:true
                 })
             }
             return new Promise((resolve, reject) => {
@@ -367,7 +380,8 @@ class AnnouncementController {
                             } else {
                                 throw {
                                     message: 'Unable to cancel!',
-                                    status: HttpStatus.INTERNAL_SERVER_ERROR
+                                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                                    isCustom:true
                                 }
                             }
                         })
@@ -377,7 +391,8 @@ class AnnouncementController {
                 } else {
                     reject(this.customError({
                         message: 'Unauthorized User!',
-                        status: HttpStatus.UNAUTHORIZED
+                        status: HttpStatus.UNAUTHORIZED,
+                        isCustom:true
                     }))
                 }
             })
@@ -459,9 +474,13 @@ class AnnouncementController {
                             if (!data) {
                                 throw {
                                     message: 'Unable to fetch!',
-                                    status: HttpStatus.INTERNAL_SERVER_ERROR
+                                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                                    isCustom:true
                                 }
                             } else {
+                                _.forEach(data.data.content, (announcementObj) => {
+                                    this.__parseAttachments(announcementObj)
+                                })
                                 resolve(data.data)
                             }
                         })
@@ -499,7 +518,7 @@ class AnnouncementController {
                 }
 
                 return {
-                    count: _.size(announcements),
+                    count: data.count,
                     announcements: announcements
                 }
 
@@ -507,6 +526,30 @@ class AnnouncementController {
                 throw this.customError(error)
             }
         })
+    }
+
+    __parseAttachments(announcement) {
+        let parsedAttachments = []
+        _.forEach(announcement.attachments, (attachment, k) => {
+            let parsedAttachment = this.__parseJSON(attachment)
+
+            if (parsedAttachment) {
+                parsedAttachments.push(parsedAttachment)
+            } else {
+                parsedAttachments = []
+                return false
+            }
+        })
+
+        announcement.attachments = parsedAttachments
+    }
+
+    __parseJSON(jsonString) {
+        try {
+            return JSON.parse(jsonString)
+        } catch (error) {
+            return false
+        }
     }
 
     __getGeolocations(orgIds, authUserToken) {
@@ -566,7 +609,6 @@ class AnnouncementController {
         })
     }
 
-
     /**
      * Get outbox of announcements for a given user
      *
@@ -575,7 +617,11 @@ class AnnouncementController {
      * @return  {[type]}              [description]
      */
     getUserOutbox(requestObj) {
-        return new Promise((resolve, reject) => {
+        return this.__getUserOutbox()(requestObj)
+    }
+
+    __getUserOutbox() {
+        return async((requestObj) => {
 
             // validate request
             let authUserToken = _.get(requestObj, 'kauth.grant.access_token.token') || _.get(requestObj, "headers['x-authenticated-user-token']")
@@ -601,23 +647,110 @@ class AnnouncementController {
             }
 
             // execute query and process response
-            this.announcementStore.findObject(query)
-                .then((data) => {
-                    if (!data) {
-                        throw {
-                            message: 'Unable to fetch!',
-                            status: HttpStatus.INTERNAL_SERVER_ERROR
+            let outboxData = await (new Promise((resolve, reject) => {
+                this.announcementStore.findObject(query)
+                    .then((data) => {
+                        if (!data) {
+                            throw {
+                                message: 'Unable to fetch!',
+                                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                                isCustom:true
+                            }
+                        } else {
+                            _.forEach(data.data.content, (announcementObj) => {
+                                this.__parseAttachments(announcementObj)
+                            })
+
+                            let response = {
+                                count: data.data.count,
+                                announcements: data.data.content
+                            }
+
+                            resolve(response)
                         }
+                    })
+                    .catch((error) => {
+                        reject(this.customError(error))
+                    })
+
+                }))
+
+            let announcementIds = _.map(outboxData.announcements, 'id')
+            let announcements = _.map(outboxData.announcements, this.__addMetricsPlaceholder)
+
+            //Get read and received status and append to response
+            
+            let metricsData = await (this.__getOutboxMetrics(announcementIds, authUserToken))
+
+            if (metricsData) {
+                _.forEach(metricsData, (metricsObj, k) => {
+                    let announcementObj = _.find(announcements, {
+                        "id": metricsObj.announcementid
+                    })
+
+                    announcementObj.metrics[metricsActivityConstant.RECEIVED] = 
+                        metricsObj[metricsActivityConstant.RECEIVED] ? 
+                        metricsObj[metricsActivityConstant.RECEIVED] : 0
+
+                    announcementObj.metrics[metricsActivityConstant.READ] = 
+                        metricsObj[metricsActivityConstant.READ] ? 
+                        metricsObj[metricsActivityConstant.READ] : 0
+                    
+                })
+            }
+
+            let response = {
+                            count: outboxData.count,
+                            announcements: announcements
+                        }
+
+            return response
+        })
+    }
+
+    __addMetricsPlaceholder(announcementObj) {
+        let metrics = {}
+        metrics[metricsActivityConstant.RECEIVED] = 0
+        metrics[metricsActivityConstant.READ] = 0
+
+        announcementObj.metrics = metrics
+
+        return announcementObj
+    }
+
+    __getOutboxMetrics(announcementIds, authUserToken) {
+        return new Promise((resolve, reject) => {
+            let query = {
+                    "aggs": {
+                        "announcementid": {
+                            "terms": {
+                                "field": "announcementid.raw",
+                                "include": announcementIds
+                            },
+                            "aggs": {
+                                "activity": {
+                                    "terms": {
+                                        "field": "activity.raw",
+                                        "include": [
+                                            metricsActivityConstant.READ,
+                                            metricsActivityConstant.RECEIVED
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            this.announcementMetricsStore.getMetrics(query, authUserToken)
+                .then((response) => {
+                    if (!response) {
+                        resolve(false)
                     } else {
-                        let response = {
-                            count: _.size(data.data.content),
-                            announcements: data.data.content
-                        }
                         resolve(response)
                     }
                 })
                 .catch((error) => {
-                    reject(this.customError(error))
+                    resolve(false)
                 })
         })
     }
@@ -652,7 +785,8 @@ class AnnouncementController {
                         if (!data) {
                             throw {
                                 message: 'Unable to fetch!',
-                                status: HttpStatus.INTERNAL_SERVER_ERROR
+                                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                                isCustom:true
                             }
                         } else {
                             userData[data.id] = data.firstName + " " + data.lastName
@@ -737,12 +871,14 @@ class AnnouncementController {
             } else {
                 throw this.customError({
                     message: 'Unauthorized User!',
-                    status: HttpStatus.UNAUTHORIZED
+                    status: HttpStatus.UNAUTHORIZED,
+                    isCustom:true
                 })
             }
             if (!request.isValid) throw {
-                message: 'Invalid request!',
-                status: HttpStatus.BAD_REQUEST
+                message: request.error,
+                status: HttpStatus.BAD_REQUEST,
+                isCustom:true
             }
 
             let metricsExists = false
@@ -791,7 +927,8 @@ class AnnouncementController {
                     if (!data) {
                         throw {
                             message: 'Unable to create',
-                            status: HttpStatus.INTERNAL_SERVER_ERROR
+                            status: HttpStatus.INTERNAL_SERVER_ERROR,
+                            isCustom:true
                         }
                     } else {
                         resolve({
@@ -855,13 +992,15 @@ class AnnouncementController {
                     } else {
                         throw {
                             message: 'Unauthorized user',
-                            status: HttpStatus.UNAUTHORIZED
+                            status: HttpStatus.UNAUTHORIZED,
+                            isCustom:true
                         }
                     }
                 } else {
                     throw {
                         message: 'Unauthorized user',
-                        status: HttpStatus.UNAUTHORIZED
+                        status: HttpStatus.UNAUTHORIZED,
+                        isCustom:true
                     }
                 }
             } catch (error) {
@@ -925,6 +1064,7 @@ class AnnouncementController {
             }
         })
     }
+
     /**
      * Which is used to create a custom error object
      * @param  {Object} error  - Error object it should contain message and status attribute 
@@ -932,10 +1072,17 @@ class AnnouncementController {
      * @return {Object}        - Error object
      */
     customError(error) {
-        return new AppError({
-            message: error.message || 'Unable to process the request!',
-            status: error.status || HttpStatus.INTERNAL_SERVER_ERROR
-        })
+        if (error.isCustom) {
+            return new AppError({
+                message: error.message || 'Unable to process the request!',
+                status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+            })
+        } else {
+            return new AppError({
+                message: 'Unable to process the request!',
+                status: HttpStatus.INTERNAL_SERVER_ERROR
+            })
+        }
     }
 }
 module.exports = AnnouncementController

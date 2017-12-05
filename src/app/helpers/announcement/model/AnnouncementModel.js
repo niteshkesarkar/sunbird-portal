@@ -14,7 +14,7 @@ let modelSchema = Joi.object().keys({
   createddate: Joi.string().required(), // part of primary key
   details: Joi.object().min(1), // any key/value with string
   links: Joi.array().items(Joi.string()),
-  attachments: Joi.array().items(Joi.string()),
+  attachments: Joi.array().max(20).items(Joi.string()),
   target: Joi.object().min(1).required(), // TODO: add validation for target format
   status: Joi.string(),
   sentcount: Joi.number(),
@@ -34,7 +34,12 @@ let apiSchema = Joi.object().keys({
     description: Joi.string(),
     target: Joi.object().min(1).required(),
     links: Joi.array().items(Joi.string()),
-    attachments: Joi.array().items(Joi.string())
+    attachments: Joi.array().max(20).items(Joi.object().keys({
+      name: Joi.string().required(),
+      mimetype: Joi.string().required(),
+      size: Joi.string().required(),
+      link: Joi.string().required()
+    }))
   }).required()
 })
 

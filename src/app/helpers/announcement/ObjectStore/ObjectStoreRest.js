@@ -43,8 +43,9 @@ class ObjectStoreRest extends ObjectStore {
             try {
                 let validation = await (this.model.validateModel(data.values))
                 if (!validation.isValid) throw {
-                    message: 'Invalid model request!',
-                    status: HttpStatus.BAD_REQUEST
+                    message: validation.error,
+                    status: HttpStatus.BAD_REQUEST,
+                    isCustom:true
                 }
                 let options = {
                     method: 'POST',
@@ -64,10 +65,7 @@ class ObjectStoreRest extends ObjectStore {
                     data: _.get(result, 'body.result'),
                 }
             } catch (error) {
-                throw new AppError({
-                    message: error.message || 'Unable to create!',
-                    status: error.status || HttpStatus.INTERNAL_SERVER_ERROR
-                })
+                throw error
             }
         })
     }
@@ -109,10 +107,7 @@ class ObjectStoreRest extends ObjectStore {
                         data: []
                     }
                 } catch (error) {
-                    throw new AppError({
-                        message: error.message || 'Unable to fetch!',
-                        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR
-                    })
+                    throw error
                 }
             })
         }
@@ -130,11 +125,13 @@ class ObjectStoreRest extends ObjectStore {
             try {
                 if (!data.values) throw {
                     message: 'Values are required!.',
-                    status: HttpStatus.BAD_REQUEST
+                    status: HttpStatus.BAD_REQUEST,
+                    isCustom:true
                 }
                 if (!data.values.id) throw {
                     message: 'Identifier is required!.',
-                    status: HttpStatus.BAD_REQUEST
+                    status: HttpStatus.BAD_REQUEST,
+                    isCustom:true
                 }
                 let options = {
                     method: 'POST',
@@ -153,10 +150,64 @@ class ObjectStoreRest extends ObjectStore {
                     data: result
                 }
             } catch (error) {
-                throw new AppError({
-                    message: error.message || 'Unable to update!',
-                    status: error.status || HttpStatus.INTERNAL_SERVER_ERROR
-                })
+                throw error
+            }
+        })
+    }
+
+    /**
+     * To fetch metrics data from elastic search.
+     * @param  {Object} query       - Query object which is need to interact with elastic search.
+     *
+     * @return {Object}             - Response object.
+     */
+    getMetrics(query, authUserToken) {
+        return this.__getMetrics()(query, authUserToken)
+    }
+
+    __getMetrics() {
+        return async((query, authUserToken) => {
+            try {
+                let options = {
+                    method: 'POST',
+                    uri: envVariables.DATASERVICE_URL + 'data/v1/object/metrics',
+                    body: {
+                        request: {
+                            "entityName": this.model.table,
+                            "rawQuery": query
+                        }
+                    },
+                    json: true,
+                    token: authUserToken
+                }
+                options.body.request = _.pickBy(options.body.request, _.identity); // Removes all falsey values
+                
+                let result = await (this.service.call(options))
+                let response = _.get(result, 'body.responseCode') === 'OK' ? {
+                                        data: _.get(result, 'body.result.response')
+                                    } : false
+
+                let metricsData = []
+
+                if (response && response.data.aggregations.announcementid.buckets) {
+                    let responseBuckets = response.data.aggregations.announcementid.buckets
+
+                    _.forEach(responseBuckets, (responseBucket, k) => {
+                        let metricsDataUnit = {}
+                        metricsDataUnit['announcementid'] = responseBucket.key
+
+                        _.forEach(responseBucket.activity.buckets, (activityData, k) => {
+                            metricsDataUnit[activityData.key] = activityData.doc_count
+                        })
+
+                        metricsData.push(metricsDataUnit)
+
+                    })
+                }
+
+                return metricsData
+            } catch (error) {
+                throw error
             }
         })
     }
