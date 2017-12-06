@@ -117,6 +117,12 @@
     "uuid": "^3.1.0"
   },
   "standard": {
+    "env": {
+        "browser": true,
+        "node": true,
+        "jasmine": true,
+        "mocha": true
+    },
     "globals": [
     "angular",
     "_",
@@ -124,7 +130,8 @@
     "moment",
     "iziToast",
     "org",
-    "alasql"
+    "alasql",
+    "md5"
     ],
     "ignore":[
       "./../Dockerfile"
