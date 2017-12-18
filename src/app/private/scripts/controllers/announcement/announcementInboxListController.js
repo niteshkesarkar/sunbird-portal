@@ -2,8 +2,20 @@
 angular.module('playerApp').controller('announcementInboxListController', ['$rootScope', '$scope', '$timeout', '$state', '$stateParams', '$q', 'toasterService', 'announcementAdapter', 'PaginationService',
   function ($rootScope, $scope, $timeout, $state, $stateParams, $q, toasterService, announcementAdapter, PaginationService) {
     var announcementInboxData = this
-    announcementInboxData.pageLimit = 10
-    announcementInboxData.showLoader = true
+
+    /**
+     * @method init
+     * @desc init variables
+     * @memberOf Controllers.announcementOutboxListController
+     */
+    announcementInboxData.init = function (limit) {
+      announcementInboxData.pageLimit = 10
+      announcementInboxData.showLoader = true
+      announcementInboxData.showDataDiv = false
+      var pageNumber = parseInt($stateParams.page) || 1
+      announcementInboxData.renderAnnouncementList(limit, pageNumber)
+    }
+
     /**
      * @method renderAnnouncementList
      * @desc - function to render inbox announcement
@@ -11,9 +23,9 @@ angular.module('playerApp').controller('announcementInboxListController', ['$roo
      * @param {int} [limit]
      */
     announcementInboxData.renderAnnouncementList = function (limit, pageNumber) {
-      pageNumber = pageNumber || 1
       announcementInboxData.limit = limit || announcementInboxData.pageLimit
-      announcementAdapter.getInboxAnnouncementList(announcementInboxData.limit, pageNumber).then(function (apiResponse) {
+      announcementAdapter.getInboxAnnouncementList(announcementInboxData.limit, pageNumber)
+      .then(function (apiResponse) {
         if (apiResponse.result.announcements.length > 0) {
           announcementInboxData.totalCount = apiResponse.result.count
           announcementInboxData.showDataDiv = true
@@ -22,11 +34,20 @@ angular.module('playerApp').controller('announcementInboxListController', ['$roo
           announcementInboxData.listData = apiResponse.result.announcements
           announcementInboxData.pageNumber = pageNumber
           announcementInboxData.pager = PaginationService.GetPager(apiResponse.result.count,
-              pageNumber, announcementInboxData.pageLimit)
+            pageNumber, announcementInboxData.pageLimit)
+
+            // Calling received API
+          _.forEach(announcementInboxData.listData, function (announcement) {
+            if (announcement.received === false) {
+              announcementAdapter.receivedAnnouncement(announcement.id).then(function (response) {})
+            }
+          })
         }
         announcementInboxData.showLoader = false
       }, function (err) {
-        announcementInboxData.showLoader = false
+        if (err) {
+          announcementInboxData.showLoader = false
+        }
       })
     }
     /**
@@ -52,7 +73,7 @@ angular.module('playerApp').controller('announcementInboxListController', ['$roo
       }
       $state.go('announcementDetails', {
         announcementId: announcementDetails.id,
-        announcementName: announcementDetails.details.title,
+        announcementName: announcementDetails.title,
         pageId: 'announcement_inbox_list'
       })
     }
@@ -61,9 +82,7 @@ angular.module('playerApp').controller('announcementInboxListController', ['$roo
       if (page < 1 || page > announcementInboxData.pager.totalPages) {
         return
       }
-      announcementInboxData.showLoader = true
-      announcementInboxData.showDataDiv = false
-      announcementInboxData.renderAnnouncementList('', page)
+      $state.go('announcementInbox', {page: page})
     }
   }
 ])

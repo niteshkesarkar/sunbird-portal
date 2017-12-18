@@ -4,19 +4,28 @@ angular.module('playerApp')
   .controller('announcementOutboxListController', ['$rootScope', '$scope', '$timeout', '$state', '$stateParams', 'toasterService', 'announcementAdapter', 'PaginationService',
     function ($rootScope, $scope, $timeout, $state, $stateParams, toasterService, announcementAdapter, PaginationService) {
       var announcementOutboxData = this
-      announcementOutboxData.pager = {}
-      announcementOutboxData.setPage = setPage
-      announcementOutboxData.pageLimit = 25
-      announcementOutboxData.showLoader = true
-      announcementOutboxData.showDataDiv = false
 
-    /**
+      /**
+       * @method init
+       * @desc init variables
+       * @memberOf Controllers.announcementOutboxListController
+       */
+      announcementOutboxData.init = function () {
+        announcementOutboxData.pager = {}
+        // announcementOutboxData.setPage = setPage
+        announcementOutboxData.pageLimit = 25
+        announcementOutboxData.showLoader = true
+        announcementOutboxData.showDataDiv = false
+        var pageNumber = parseInt($stateParams.page) || 1
+        announcementOutboxData.renderAnnouncementList(pageNumber)
+      }
+
+      /**
      * @method renderAnnouncementList
      * @desc - function to get announcement outbox data
      * @memberOf Controllers.announcementOutboxListController
      */
       announcementOutboxData.renderAnnouncementList = function (pageNumber) {
-        pageNumber = pageNumber || 1
         announcementAdapter.getOutBoxAnnouncementList(announcementOutboxData.pageLimit, pageNumber)
           .then(function (apiResponse) {
             announcementOutboxData.showLoader = false
@@ -35,22 +44,20 @@ angular.module('playerApp')
           })
       }
 
-    /**
+      /**
      * @method setPage
      * @desc - function to setPager
      * @memberOf Controllers.announcementOutboxListController
      * @param {int} [page] [page number]
      */
-      function setPage (page) {
+      announcementOutboxData.setPage = function (page) {
         if (page < 1 || page > announcementOutboxData.pager.totalPages) {
           return
         }
-        announcementOutboxData.showDataDiv = false
-        announcementOutboxData.showLoader = true
-        announcementOutboxData.renderAnnouncementList(page)
+        $state.go('announcementOutbox', {page: page})
       }
 
-    /**
+      /**
      * @method showModal
      * @desc - function to show modal popup
      * @memberOf Controllers.announcementOutboxListController
@@ -62,7 +69,7 @@ angular.module('playerApp')
         $('#' + modalId).modal('show')
       }
 
-    /**
+      /**
      * @method closeModal
      * @desc - function to close modal popup
      * @memberOf Controllers.announcementOutboxListController
@@ -72,7 +79,7 @@ angular.module('playerApp')
         $('#' + modalId).modal('hide')
       }
 
-    /**
+      /**
      * @method deleteAnnouncement
      * @desc - function to delete announcement
      * @memberOf Controllers.announcementOutboxListController
@@ -97,7 +104,7 @@ angular.module('playerApp')
         })
       }
 
-    /**
+      /**
      * @method getResend
      * @desc - function to resend announcement
      * @memberOf Controllers.announcementOutboxListController
@@ -107,17 +114,21 @@ angular.module('playerApp')
         $state.go('announcementResend', {announcementId: announcementId, stepNumber: '1', telemetryAnnTitle: announcementTitle})
       }
 
-    /**
+      /**
      * @method showAnnouncementDetails
      * @desc - function to show announcement details
      * @memberOf Controllers.announcementOutboxListController
      * @param {string} [annId] [show details based on announcement id]
      */
       announcementOutboxData.showAnnouncementDetails = function (annId, item) {
-        $state.go('announcementDetails', {announcementId: annId, announcementName: item.details.title, pageId: 'announcement_outbox_view'})
+        $state.go('announcementDetails', {
+          announcementId: annId,
+          announcementName: item.title,
+          pageId: 'announcement_outbox_view'
+        })
       }
 
-    /**
+      /**
      * @method gotToAnnouncementCreateState
      * @desc - function to change the current state to announcement create
      * @memberOf Controllers.announcementOutboxListController

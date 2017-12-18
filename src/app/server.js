@@ -142,48 +142,57 @@ app.all('/public/service/v1/content/*', proxy(contentURL, {
   }
 }))
 
-app.post('/private/service/v1/learner/content/v1/media/upload', proxyUtils.verifyToken(), permissionsHelper.checkPermission(), proxy(learnerURL, {
-  limit: reqDataLimitOfContentUpload,
-  proxyReqOptDecorator: proxyUtils.decorateRequestHeaders(),
-  proxyReqPathResolver: function (req) {
-    return require('url').parse(learnerURL + '/content/v1/media/upload').path
-  },
-  userResDecorator: function (proxyRes, proxyResData, userReq, userRes) {
-    let data = JSON.parse(proxyResData.toString('utf8'))
-    if (data.responseCode === 'OK') {
-      data.success = true
+app.post('/private/service/v1/learner/content/v1/media/upload',
+  proxyUtils.verifyToken(),
+  permissionsHelper.checkPermission(),
+  proxy(learnerURL, {
+    limit: reqDataLimitOfContentUpload,
+    proxyReqOptDecorator: proxyUtils.decorateRequestHeaders(),
+    proxyReqPathResolver: function (req) {
+      return require('url').parse(learnerURL + '/content/v1/media/upload').path
+    },
+    userResDecorator: function (proxyRes, proxyResData, userReq, userRes) {
+      let data = JSON.parse(proxyResData.toString('utf8'))
+      if (data.responseCode === 'OK') {
+        data.success = true
+      }
+      return JSON.stringify(data)
     }
-    return JSON.stringify(data)
-  }
-}))
+  }))
 
-app.all('/private/service/v1/learner/*', proxyUtils.verifyToken(), permissionsHelper.checkPermission(), proxy(learnerURL, {
-  limit: reqDataLimitOfContentUpload,
-  proxyReqOptDecorator: proxyUtils.decorateRequestHeaders(),
-  proxyReqPathResolver: function (req) {
-    let urlParam = req.params['0']
-    let query = require('url').parse(req.url).query
-    if (query) {
-      return require('url').parse(learnerURL + urlParam + '?' + query).path
-    } else {
-      return require('url').parse(learnerURL + urlParam).path
+app.all('/private/service/v1/learner/*',
+  proxyUtils.verifyToken(),
+  permissionsHelper.checkPermission(),
+  proxy(learnerURL, {
+    limit: reqDataLimitOfContentUpload,
+    proxyReqOptDecorator: proxyUtils.decorateRequestHeaders(),
+    proxyReqPathResolver: function (req) {
+      let urlParam = req.params['0']
+      let query = require('url').parse(req.url).query
+      if (query) {
+        return require('url').parse(learnerURL + urlParam + '?' + query).path
+      } else {
+        return require('url').parse(learnerURL + urlParam).path
+      }
     }
-  }
-}))
+  }))
 
-app.all('/private/service/v1/content/*', proxyUtils.verifyToken(), permissionsHelper.checkPermission(), proxy(contentURL, {
-  limit: reqDataLimitOfContentUpload,
-  proxyReqOptDecorator: proxyUtils.decorateRequestHeaders(),
-  proxyReqPathResolver: function (req) {
-    let urlParam = req.params['0']
-    let query = require('url').parse(req.url).query
-    if (query) {
-      return require('url').parse(contentURL + urlParam + '?' + query).path
-    } else {
-      return require('url').parse(contentURL + urlParam).path
+app.all('/private/service/v1/content/*',
+  proxyUtils.verifyToken(),
+  permissionsHelper.checkPermission(),
+  proxy(contentURL, {
+    limit: reqDataLimitOfContentUpload,
+    proxyReqOptDecorator: proxyUtils.decorateRequestHeaders(),
+    proxyReqPathResolver: function (req) {
+      let urlParam = req.params['0']
+      let query = require('url').parse(req.url).query
+      if (query) {
+        return require('url').parse(contentURL + urlParam + '?' + query).path
+      } else {
+        return require('url').parse(contentURL + urlParam).path
+      }
     }
-  }
-}))
+  }))
 
 // Local proxy for content and learner service
 require('./proxy/localProxy.js')(app)
@@ -236,7 +245,7 @@ app.all('*', function (req, res) {
   res.redirect('/')
 })
 
-  /*
+/*
  * Method called after successful authentication and it will log the telemetry for CP_SESSION_START and updates the login time
  */
 keycloak.authenticated = function (request) {
