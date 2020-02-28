@@ -269,8 +269,11 @@ app-workspace {
       }
     }
     .checkbox input:checked~label:after {
-      color: rgb(2, 78, 157);
-      }
+      color: #024e9d;
+    }
+    .radio input:checked~label:after {
+      background: #024e9d;
+    }
   ::placeholder{ 
       color: #000 !important;
     }
