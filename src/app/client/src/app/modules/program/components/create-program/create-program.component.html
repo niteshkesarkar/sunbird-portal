@@ -1,17 +1,17 @@
-<div class="ui form centered grid my-10">
+<div class="ui centered grid my-10">
    <div class="twelve wide tablet seven wide computer column">
 	   <sui-tabset>
 		   <div class="ui top attached tabular menu">
 				<a class="item" suiTabHeader="1">Details</a>
 				<a class="item" suiTabHeader="2" [isDisabled]="!showTextBookSelector">Second</a>
 			</div>
-			<div class="ui bottom attached segment" suiTabContent="1">
-			  <form>
-				 <div class="required field px-10">
+			<div class=" bottom attached segment ui grid  m-0 sb-workspace-modal" suiTabContent="1">
+			  <form class="ui grid form">
+				 <div class="required twelve wide column px-10">
 					<label>Name</label>
 					<input autofocus="" class="sb-form-control ng-pristine ng-valid ng-touched" type="text" placeholder="Name">
 				 </div>
-				 <div class="required field px-10">
+				 <div class="required twelve wide column px-10">
 					   <label>Description</label>
 					   <div class="sb-field relative">
 						  <textarea type="text" class="wmd-input width-100 sb-form-control" placeholder="Add reward description" name="" required></textarea>
@@ -19,8 +19,7 @@
 					   </div>
 					</div>
 				 <h5 class="ui dividing header font-weight-bold">Progam Schedule Dates</h5>
-				 <div class="three fields">
-					<div class="required field">
+					<div class="required four wide column">
 					   <label>Expression for Interest Date</label>
 					   <div class="ui read-only calendar mb-10 sb-field">
 						  <div class="ui input right icon">
@@ -29,7 +28,7 @@
 						  </div>
 					   </div>
 					</div>
-					<div class="required field">
+					<div class="required four wide column">
 					   <label>Shortlisting of Contributor Date</label>
 					   <div class="ui read-only calendar mb-10">
 						  <div class="ui input right icon">
@@ -38,7 +37,7 @@
 						  </div>
 					   </div>
 					</div>
-					<div class="required field">
+					<div class="required four wide column">
 					   <label>Content Submission Date</label>
 					   <div class="ui read-only calendar mb-10">
 						  <div class="ui input right icon">
@@ -47,9 +46,7 @@
 						  </div>
 					   </div>
 					</div>
-				 </div>
-				 <div class="three fields">
-					<div class="required field">
+					<div class="required eight wide column">
 					   <label>Content Curation Date</label>
 					   <div class="ui read-only calendar mb-10">
 						  <div class="ui input right icon">
@@ -58,7 +55,7 @@
 						  </div>
 					   </div>
 					</div>
-					<div class="required field">
+					<div class="required field eight wide column">
 					   <label>Textbook Publication Date</label>
 					   <div class="ui read-only calendar mb-10">
 						  <div class="ui input right icon">
@@ -67,10 +64,8 @@
 						  </div>
 					   </div>
 					</div>
-				 </div>
 				 <h5 class="ui dividing header font-weight-bold">Select Text books from Diksha </h5>
-				 <div class="two fields">
-					<div class="required field">
+					<div class="required eight wide column">
 					   <label class="mb-10">Board</label>
 					   <ng-template let-option #optionTemplate >
 						  <div class="field m-0">
@@ -93,7 +88,7 @@
 						   </sui-select-option>
 					   </sui-select>
 					</div>
-					<div class="required field">
+					<div class="required eight wide column">
 					   <label>Select Medium</label>
 					   <ng-template let-option #optionTemplate >
 						  <div class="field m-0">
@@ -118,9 +113,8 @@
 					   </sui-select-option>
 					   </sui-multi-select>
 					</div>
-				 </div>
-				 <div class="two fields">
-					<div class="required field">
+
+					<div class="required eight wide column">
 					   <label> Grade / Class </label>
 					   <ng-template let-option #optionTemplate >
 						  <div class="field m-0">
@@ -145,59 +139,63 @@
 					   </sui-select-option>
 					   </sui-multi-select>
 					</div>
-					<div class="required field">
-					   <label> Subject</label>
-					   <ng-template let-option #optionTemplate >
-						  <div class="field m-0">
-							 <div class="template-checkbox">
-								<div class="p-5 option-text"  title="{{option.name}}">
-								   {{option.name}}
+					<div class="required eight wide column">
+						 <label> Subject</label>
+						 <div class="sb-field">
+								<ng-template let-option #optionTemplate >
+									<div class="field m-0">
+									<div class="template-checkbox">
+										<div class="p-5 option-text"  title="{{option.name}}">
+											{{option.name}}
+										</div>
+										<div class="ml-auto">
+											<i class="square outline medium icon"></i>
+										</div>
+									</div>
+									</div>
+								</ng-template>
+								<sui-multi-select class="selection"
+								labelField="name"
+								[hasLabels]="true"
+								[options]="data.filteredOptions"
+								valueField="name"
+								#multiSelect>
+								<sui-select-option *ngFor="let option of data.filteredOptions"
+								[value]="option" >
+								</sui-select-option>
+								</sui-multi-select>
 								</div>
-								<div class="ml-auto">
-								   <i class="square outline medium icon"></i>
-								</div>
-							 </div>
-						  </div>
-					   </ng-template>
-					   <sui-multi-select class="selection"
-					   labelField="name"
-					   [hasLabels]="true"
-					   [options]="data.filteredOptions"
-					   valueField="name"
-					   #multiSelect>
-					   <sui-select-option *ngFor="let option of data.filteredOptions"
-					   [value]="option" >
-					   </sui-select-option>
-					   </sui-multi-select>
 					</div>
-						<div class="field">
-					   <label> List of content types</label>
-					   <ng-template let-option #optionTemplate >
-						  <div class="field m-0">
-							 <div class="template-checkbox">
-								<div class="p-5 option-text"  title="{{option.name}}">
-								   {{option.name}}
+						<div class="eight wide column">
+						 <label> List of content types</label>
+						 <div class="sb-field">
+							<ng-template let-option #optionTemplate >
+								<div class="field m-0">
+								<div class="template-checkbox">
+									<div class="p-5 option-text"  title="{{option.name}}">
+										{{option.name}}
+									</div>
+									<div class="ml-auto">
+										<i class="square outline medium icon"></i>
+									</div>
 								</div>
-								<div class="ml-auto">
-								   <i class="square outline medium icon"></i>
 								</div>
-							 </div>
-						  </div>
-					   </ng-template>
-					   <sui-multi-select class="selection"
-						   labelField="name"
-						   [options]="options"
-						   valueField="name"
-						   #multiselect>
-							   <sui-select-option *ngFor="let option of data.contenttypes"
-							   [value]="option" >
-							   </sui-select-option>
-					   </sui-multi-select>
+							</ng-template>
+							<sui-multi-select class="selection"
+								labelField="name"
+								[options]="options"
+								valueField="name"
+								#multiselect>
+									<sui-select-option *ngFor="let option of data.contenttypes"
+									[value]="option" >
+									</sui-select-option>
+							</sui-multi-select>
+						</div>
 					</div>
-				 </div>
-				 <h5 class="ui dividing header font-weight-bold">Reward and Recognition</h5>
+
+					<h5 class="ui dividing header font-weight-bold">Reward and Recognition</h5>
 				 <div class="px-10">
-					<div class="field">
+					<div class="twelve wide column">
 					   <label>Rewards Given</label>
 					   <div class="sb-field relative">
 						  <textarea type="text" class="wmd-input width-100 sb-form-control" placeholder="Add reward description" name="" required></textarea>
