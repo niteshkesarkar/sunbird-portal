@@ -243,3 +243,47 @@ app-workspace {
     }
   }
 }
+.form-fields{
+  background: #ffffff;
+  .sb-form-control {
+      background-color: var(--white) !important;
+      background-clip: padding-box !important;
+      border: 0.0625rem solid #999 !important;
+      border-radius: 0.1875rem !important;
+      color: var(--gray-800) !important;
+      font-size: 0.8125rem !important;
+      line-height: 1.3125rem !important;
+      padding: 0.25rem 0.5rem !important;
+      width: 100% !important;
+  }
+  .field{
+      label{
+        font-weight: 700 !important;
+        margin-bottom:10px;
+        font-size:13px !important;
+      }
+      .selection{
+          .ui.dropdown{
+              border:1px solid rgb(153, 153, 153);
+          }
+      }
+    }
+    .checkbox input:checked~label:after {
+      color: rgb(2, 78, 157);
+      }
+  ::placeholder{ 
+      color: #000 !important;
+    }
+  .dropdown{
+    .text{
+      margin: 0.1875rem 0 0.1875rem 0 !important;
+    }
+  }
+  .ui.calendar{
+      input{
+          width: 100% !important;
+          border: none;
+          padding: 5px;
+      }
+  } 
+}
