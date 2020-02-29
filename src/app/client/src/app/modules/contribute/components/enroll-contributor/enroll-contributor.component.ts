@@ -16,7 +16,7 @@ export class EnrollContributorComponent implements OnInit {
     this.data =
     {
       'filteredOptions' :
-      [{'name': 'NCERT', 'value': 'NCERT'}, {'name': 'CBSE', 'value': 'CBSE'},, {'name': 'ICSE', 'value': 'ICSE'},, {'name': 'UP', 'value': 'UP'}]
+      [{'name': 'NCERT', 'value': 'NCERT'}, {'name': 'CBSE', 'value': 'CBSE'}, {'name': 'ICSE', 'value': 'ICSE'}, {'name': 'UP', 'value': 'UP'}]
     }
   }
 

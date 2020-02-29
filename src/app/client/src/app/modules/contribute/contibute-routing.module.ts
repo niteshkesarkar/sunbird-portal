@@ -16,20 +16,20 @@ const routes: Routes = [{
 {
   path: 'enrollprograms', component: EnrollContributorComponent, pathMatch: 'full',
   data: {
-   // telemetry: { env: 'programs', type: 'view', subtype: 'paginate' }
+    telemetry: { env: 'programs', type: 'view', subtype: 'paginate' }
   }, 
 },
 {
   path: 'myenrollprograms', component: ListAllMyProgramsComponent, pathMatch: 'full',
   data: {
-   // telemetry: { env: 'programs', type: 'view', subtype: 'paginate' }
+    telemetry: { env: 'programs', type: 'view', subtype: 'paginate' }
   }, 
 },
 {
   path: 'myprogram/:programId', component: ProgramComponent, pathMatch: 'full',
-  // data: {
-  //   telemetry: { env: 'myprograms', type: 'view', subtype: 'paginate' }
-  // },
+    data: {
+      telemetry: { env: 'myprograms', type: 'view', subtype: 'paginate' }
+    },
 },
 {
   path: 'program/:programId', component: ProgramComponent,

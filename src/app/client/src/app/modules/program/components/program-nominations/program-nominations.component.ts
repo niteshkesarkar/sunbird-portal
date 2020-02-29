@@ -12,7 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class ProgramNominationsComponent implements OnInit, AfterViewInit {
   component = ListNominationsComponent;
-  nominations = [{"contributor_id":"1234", "contributor_name": "Nitesh Kesarkar", "type": "Organisation", "website": "www.codewithnitesh.com"}, {"contributor_id":"1245", "contributor_name": "Nilesh Sanap", "type": "Individual"}, {"contributor_id":"hhd_898", "contributor_name": "Vaishali K", "type": "Individual"}];
+  nominations = [{"contributor_id":"1234", "contributor_name": "Nitesh Kesarkar", "type": "Organisation", "website": "www.codewithnitesh.com", "status": "Pending", "program_id":"ab9ba380-579c-11ea-b095-0583a8dc4a3e"}, {"contributor_id":"1245", "contributor_name": "Nilesh Sanap", "type": "Individual", "program_id":"ab9ba380-579c-11ea-b095-0583a8dc4a3e", "status": "Approved", }, {"contributor_id":"hhd_898", "contributor_name": "Vaishali K", "type": "Individual", "program_id":"ab9ba380-579c-11ea-b095-0583a8dc4a3e", "status": "Rejected", }];
 
   inputs = {
     nominations: this.nominations,

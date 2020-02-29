@@ -3,6 +3,7 @@ import { ProgramsService, PublicDataService } from '@sunbird/core';
 import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter} from '@angular/core';
 import * as _ from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
+
 @Component({
   selector: 'app-list-nominations',
   templateUrl: './list-nominations.component.html',
@@ -14,7 +15,9 @@ export class ListNominationsComponent implements OnInit, AfterViewInit {
 	 @Output()
 	 onApprove = new EventEmitter();
 	 @Output()
-	 onReject = new EventEmitter();
+   onReject = new EventEmitter();
+   
+   show = false;
 
   constructor(private programsService: ProgramsService, public resourceService: ResourceService,
     private config: ConfigService, private publicDataService: PublicDataService,
@@ -31,5 +34,9 @@ export class ListNominationsComponent implements OnInit, AfterViewInit {
   
   onRejectClick(nomination) {
 	this.onReject.emit(nomination);
+  }
+
+  goToProfile() {
+    this.router.navigateByUrl('/profile');
   }
 }
